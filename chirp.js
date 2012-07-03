@@ -81,7 +81,7 @@ var Chirp = function( opts ){
 				//retrieve
 				if( json == undefined ){	
 					cachedData = JSON.parse(localStorage.getItem(key));
-					if( now - cachedData.time < options.cacheExpire ){
+					if( cachedData && (now - cachedData.time < options.cacheExpire) ){
 						cachedData = cachedData.data;
 					}else{
 						cachedData = null;
