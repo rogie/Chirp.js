@@ -1,17 +1,23 @@
 var Chirp = function( opts ){
-	var api = 'http://api.twitter.com/1/statuses/user_timeline.json',
+	var api = {
+			user: 'http://api.twitter.com/1/statuses/user_timeline.json?include_entities=true&count={{count}}&include_rts={{retweets}}&exclude_replies={{!replies}}&screen_name={{user}}',
+			list: 'http://api.twitter.com/1/{{user}}/lists/{{list}}/statuses.json?include_entities=true',
+			search: 'http://search.twitter.com/search.json?include_entities=true&q={{search}}'
+		},
 		options = {
 			retweets: true,
 			replies: false,
 			user: 'rogie',
-			tweet: null,
+			list: null,
+			search: null,
 			target: null,
 			count: 100,
+			max: 20,
 			cacheExpire: 1000 * 60 * 2, //2 minute expire time
 			callback: function(){},
 			templates: {
-				base: '<ul class="chirp">{{tweets}}</ul>',
-				tweet: '<li>{{html}}</li>'
+				base:'<ul class="chirp">{{tweets}}</ul>',
+				tweet: '<li><img src="{{user.profile_image_url}}"> {{html}}</li>'
 			}
 		},
 		ext = function(o1,o2){
@@ -57,22 +63,30 @@ var Chirp = function( opts ){
 				json[twt].html = linkify(json[twt].text);
 				json[twt].time_ago = ago(json[twt].created_at);
 				twts += render(options.templates.tweet,json[twt]);
+				if( i==options.max ){
+					break;
+				} 
 			}
 			return render(options.templates.base,{tweets:twts});
 		},
 		render = function( tpl, data ){
-		   var 	html = tpl,
+		   var 	output = tpl,
 		       	dotData = function(d,dotKey){
-		   	   		return eval("d['" + dotKey.split('.').join("']['") + "']"); 
+		   	   		try{
+		   	   			val = eval("d['" + dotKey.split('.').join("']['") + "']");
+		   	   		}catch(e){
+		   	   			val = '';
+		   	   		}
+		   	   		return val;
 		   		},
 		   		matches = tpl.match(/{{[^}}]*}}/igm);
 		   for(i in matches){
-		   	html = html.replace(
+		   	output = output.replace(
 		   		new RegExp(matches[i],'igm'), 
 		   		dotData(data, matches[i].replace(/{{|}}/ig,'')) || ''
 		   	);
 		   }
-		   return html;
+		   return output;
 		},
 		cache = function( key, json ){
 			if( localStorage && JSON ){
@@ -80,16 +94,24 @@ var Chirp = function( opts ){
 					cachedData = null;
 				//retrieve
 				if( json == undefined ){	
-					cachedData = JSON.parse(localStorage.getItem(key));
-					if( cachedData && (now - cachedData.time < options.cacheExpire) ){
-						cachedData = cachedData.data;
+					try{ cachedData = JSON.parse(localStorage.getItem(key)); }catch(e){}
+					if( cachedData ){
+						if( (now - cachedData.time) < options.cacheExpire ){
+							cachedData = cachedData.data;
+						} else {
+							localStorage.removeItem(key);
+						}
 					}else{
 						cachedData = null;
 					}
 					return cachedData;	
 				//set
-				}else{		
-					localStorage.setItem(key, JSON.stringify({time:now,data:json}));
+				}else{	
+					try{
+						localStorage.setItem(key, escape(JSON.stringify({time:now,data:json})));
+					}catch(e){
+						console.log(e);
+					}
 				}	
 			}else{
 				return null;
@@ -101,9 +123,10 @@ var Chirp = function( opts ){
 			var	callkey = 'callback' + Chirp.requests,
 				kids = document.body.children,
 				script = document.scripts[document.scripts.length-1],
-				url = api + '?count=' + options.count + '&include_rts=' + options.retweets + '&exclude_replies=' + !options.replies + '&screen_name=' + options.user,
+				url = (options.list? render(api.list,options) : (options.search? render(api.search,options) : render(api.user,options))),
 				scriptInBody = script.parentNode.nodeName != 'head';
 				Chirp[callkey] = function(json,cached){
+					json = json.results? json.results : json;
 					if( cached !== true ){
 						cache(url,json);
 					}
@@ -112,7 +135,7 @@ var Chirp = function( opts ){
 					if( options.target == null ){
 						script.parentNode.insertBefore(twts,script);
 					}else{
-						document.getElementById(options.target).appendChild(twts);
+						document.getElementById(options.target).innerHTML = twts.innerHTML;
 					}
 					options.callback.call(this,json);
 				}
@@ -122,8 +145,24 @@ var Chirp = function( opts ){
 				get.src = url + '&callback=Chirp.' + callkey;	
 				document.head.appendChild(get);
 			}
+		},
+		init = function( opts ){
+			if( opts && opts != undefined ){
+				if( opts.constructor == String ){
+					var a = opts.split('/'), o = {};
+					o.user = a[0];
+					o.list = a[1]? a[1] : null;
+					ext(options,o);
+				}else if (opts.constructor == Object) {
+					ext(options,opts);
+				}
+			}	
 		};
-	this.show = function(){
+	this.show = function( opts ){
+		init(opts);
+		if( options.target ){
+			document.getElementById(options.target).innerHTML = '';
+		}
 		get();	
 	}
 	
@@ -131,13 +170,7 @@ var Chirp = function( opts ){
 	if(this.constructor != Chirp ){
 		new Chirp( opts ).show();
 	}else{
-		if( opts && opts != undefined ){
-			if( opts.constructor == String ){
-				ext(options,{user:opts});
-			}else if (opts.constructor == Object) {
-				ext(options,opts);
-			}
-		}
+		init( opts );
 	}
 }
 //so that we can read vars
