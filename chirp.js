@@ -53,6 +53,9 @@ var Chirp = function( opts ){
 			//replace all links
 			txt = txt.replace(/((\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|]))/igm,'<a href="$1">$1</a>');
 			
+			//replace all hashtags
+			txt = txt.replace(/#([A-Za-z0-9_]+)/igm,'<a href="http://twitter.com/search/%23$1">#$1</a>');
+			
 			//replace all at-names
 			return txt.replace(/@([A-Za-z0-9_]+)/igm,'<a href="http://twitter.com/$1">@$1</a>');	
 		},
@@ -72,8 +75,13 @@ var Chirp = function( opts ){
 		render = function( tpl, data ){
 		   var 	output = tpl,
 		       	dotData = function(d,dotKey){
-		   	   		try{
-		   	   			val = eval("d['" + dotKey.split('.').join("']['") + "']");
+		   	   		var invert = '';
+		   	   		if(dotKey.indexOf("!")>-1){
+		   	   			dotKey = dotKey.replace(/!/ig,'');
+		   	   			invert = '!';
+		   	   		}
+		   	   		try{		   	   			
+		   	   			val = eval(invert + "d['" + dotKey.split('.').join("']['") + "']");
 		   	   		}catch(e){
 		   	   			val = '';
 		   	   		}
@@ -81,10 +89,9 @@ var Chirp = function( opts ){
 		   		},
 		   		matches = tpl.match(/{{[^}}]*}}/igm);
 		   for(i in matches){
-		   	output = output.replace(
-		   		new RegExp(matches[i],'igm'), 
-		   		dotData(data, matches[i].replace(/{{|}}/ig,'')) || ''
-		   	);
+		   	var m = matches[i], 
+		   			val = dotData(data, matches[i].replace(/{{|}}/ig,'')) || '';
+		   	output = output.replace( new RegExp(m,'igm'), val );
 		   }
 		   return output;
 		},
@@ -125,6 +132,7 @@ var Chirp = function( opts ){
 				script = document.scripts[document.scripts.length-1],
 				url = (options.list? render(api.list,options) : (options.search? render(api.search,options) : render(api.user,options))),
 				scriptInBody = script.parentNode.nodeName != 'head';
+				console.log(url);
 				Chirp[callkey] = function(json,cached){
 					json = json.results? json.results : json;
 					if( cached !== true ){
