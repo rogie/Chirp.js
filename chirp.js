@@ -13,7 +13,7 @@ var Chirp = function( opts ){
 			target: null,
 			count: 100,
 			max: 20,
-			cacheExpire: 1000 * 60 * 2, //2 minute expire time
+			cacheExpire: 1000 * 60 * 2,
 			callback: function(){},
 			templates: {
 				base:'<ul class="chirp">{{tweets}}</ul>',
@@ -35,10 +35,8 @@ var Chirp = function( opts ){
 			var date = new Date((time || "").replace(/-/g,"/").replace(/[TZ]/g," ")),
 				diff = (((new Date()).getTime() - date.getTime()) / 1000),
 				day_diff = Math.floor(diff / 86400);
-					
 			if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
 				return;
-					
 			return day_diff == 0 && (
 					diff < 60 && "just now" ||
 					diff < 120 && "1 minute ago" ||
@@ -49,21 +47,39 @@ var Chirp = function( opts ){
 				day_diff < 7 && day_diff + " days ago" ||
 				day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
 		},
-		linkify = function( txt ){
-			//replace all links
-			txt = txt.replace(/((\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|]))/igm,'<a href="$1">$1</a>');
-			
-			//replace all hashtags
-			txt = txt.replace(/#([A-Za-z0-9_]+)/igm,'<a href="http://twitter.com/search/%23$1">#$1</a>');
-			
-			//replace all at-names
-			return txt.replace(/@([A-Za-z0-9_]+)/igm,'<a href="http://twitter.com/$1">@$1</a>');	
+		htmlify = function( txt, entities ){
+	    var indices = [],
+	        html = txt, 
+	        link = {
+	          'urls': function(e){ return '<a href="' + e.expanded_url + '">' + e.display_url + '</a>' },
+	          'hashtags': function(e){ return '<a href="http://twitter.com/search/%23' + e.text + '">#' + e.text + '</a>' },
+	          'user_mentions': function(e){ return '<a href="http://twitter.com/' + e.screen_name + '" title="' + e.name + '">@' + e.screen_name + '</a>'},
+	          'media': function(e){ return '<a href="' + e.expanded_url + '">' + e.display_url + '</a>' }
+	        }
+	    for( var key in entities ){
+	      e = entities[key]
+	      if( entities[key].length > 0 ){
+	        for(var i=0,e;e = entities[key][i];++i){
+    	      indices[e.indices[0]] = {
+    	        start: e.indices[0],
+    	        end: e.indices[1],
+    	        link: link[key](e) 
+    	      }
+  	      }
+	      }
+	    }	
+	    for( var i = indices.length-1; i > 0; --i){ 
+		    if( indices[i] != undefined ){
+		      html = html.substr(0,indices[i].start) + indices[i].link + html.substr(indices[i].end,html.length-1);
+		    }
+		  }
+		  return html;
 		},
 		toHTML = function( json ){
 			var twts = '',i=0; 
 			for(twt in json){
 				json[twt].index = ++i;
-				json[twt].html = linkify(json[twt].text);
+				json[twt].html = htmlify(json[twt].text, json[twt].entities);
 				json[twt].time_ago = ago(json[twt].created_at);
 				twts += render(options.templates.tweet,json[twt]);
 				if( i==options.max ){
@@ -88,7 +104,7 @@ var Chirp = function( opts ){
 		   	   		return val;
 		   		},
 		   		matches = tpl.match(/{{[^}}]*}}/igm);
-		   for(i in matches){
+		   for(var i=0; i < matches.length; ++i){
 		   	var m = matches[i], 
 		   			val = dotData(data, matches[i].replace(/{{|}}/ig,'')) || '';
 		   	output = output.replace( new RegExp(m,'igm'), val );
@@ -99,7 +115,6 @@ var Chirp = function( opts ){
 			if( localStorage && JSON ){
 				var now = new Date().getTime(), 
 					cachedData = null;
-				//retrieve
 				if( json == undefined ){	
 					try{ cachedData = JSON.parse(localStorage.getItem(key)); }catch(e){}
 					if( cachedData ){
@@ -112,7 +127,6 @@ var Chirp = function( opts ){
 						cachedData = null;
 					}
 					return cachedData;	
-				//set
 				}else{	
 					try{
 						localStorage.setItem(key, escape(JSON.stringify({time:now,data:json})));
@@ -132,7 +146,6 @@ var Chirp = function( opts ){
 				script = document.scripts[document.scripts.length-1],
 				url = (options.list? render(api.list,options) : (options.search? render(api.search,options) : render(api.user,options))),
 				scriptInBody = script.parentNode.nodeName != 'head';
-				console.log(url);
 				Chirp[callkey] = function(json,cached){
 					json = json.results? json.results : json;
 					if( cached !== true ){
@@ -151,7 +164,7 @@ var Chirp = function( opts ){
 				Chirp[callkey](cachedData,true);
 			}else{
 				get.src = url + '&callback=Chirp.' + callkey;	
-				document.head.appendChild(get);
+				document.getElementsByTagName('head')[0].appendChild(get);
 			}
 		},
 		init = function( opts ){
@@ -173,7 +186,6 @@ var Chirp = function( opts ){
 		}
 		get();	
 	}
-	
 	//Chirp can be used as a singleton by passing the user to the function	
 	if(this.constructor != Chirp ){
 		new Chirp( opts ).show();
