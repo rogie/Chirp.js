@@ -17,8 +17,8 @@ var Chirp = function( opts ){
 			success: function(){},
 			error: function(){},
 			templates: {
-				base:'<ul class="chirp">{{tweets}}</ul>',
-				tweet: '<li><img src="{{user.profile_image_url}}"> {{html}}</li>'
+				base:'<div class="chirp">{{tweets}}</div>',
+				tweet: '<p>{{html}}</p>'
 			}
 		},
 		ext = function(o1,o2){
