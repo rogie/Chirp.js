@@ -14,7 +14,8 @@ var Chirp = function( opts ){
 			count: 100,
 			max: 20,
 			cacheExpire: 1000 * 60 * 2,
-			callback: function(){},
+			success: function(){},
+			error: function(){},
 			templates: {
 				base:'<ul class="chirp">{{tweets}}</ul>',
 				tweet: '<li><img src="{{user.profile_image_url}}"> {{html}}</li>'
@@ -158,8 +159,9 @@ var Chirp = function( opts ){
 					}else{
 						document.getElementById(options.target).innerHTML = twts.innerHTML;
 					}
-					options.callback.call(this,json);
+					options.success.call(this,json);
 				}
+				get.onerror = options.error;
 			if( cachedData = cache(url) ){
 				Chirp[callkey](cachedData,true);
 			}else{
