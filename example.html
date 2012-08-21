@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <script src="chirp.min.js"></script>
+    
+    <h1>Here are some examples to get you started</h1>
+    <p>Visit <a href="http://lab.rog.ie/chirp/">Chirp's page</a> for more documentation, if needed</p>
+    
+    <h2>Some tweets from @rogie</h2>
+    <script>Chirp('rogie')</script>
+    
+    <h2>Some tweets from @rogie's illustrators list</h2>
+    <script>Chirp('rogie/illustrators')</script>
+    
+    <h2>Some Advanced Options</h2>
+    <script>Chirp({
+      user:'rogie',
+      max:3,
+      templates: {
+      	base: '<ul class="chirp">{{tweets}}</ul>',
+      	tweet: '<li><p><a href="http://twitter.com/{{user.screen_name}}" title="{{user.name}} — {{user.description}}"><img src="{{user.profile_image_url}}"></a> {{html}}</p><span class="meta"><time><a href="http://twitter.com/{{user.screen_name}}/statuses/{{id_str}}">{{time_ago}}</a></time> &mdash; via <a href="http://twitter.com/{{user.screen_name}}" title="{{user.name}} — {{user.description}}">{{user.name}}</a></span></li>'
+      }
+    })</script>
+    
+    <h2>Using Success Callback & Target</h2>
+    <button onclick="getTweets()">Test it!</button>
+    <div id="tweets-1"><p>Click the button to get the tweets.</p></div>
+    <script>
+    function getTweets(){
+      var c = new Chirp({
+        target: 'tweets-1',
+        user:'rogie',
+        max:3,
+        success: function( data ){
+          alert('You just got tweets!');
+        }
+      });
+      c.show();
+    }
+    </script>
+    <h2>Using Error Callback & Target</h2>
+     <button onclick="getTweetsError()">Test it!</button>
+     <div id="tweets-2"><p>Click the button to get the tweets.</p></div>
+     <script>
+     function getTweetsError(){
+       var c = new Chirp({
+         target: 'tweets-2',
+         user:'rogieSDFSDF',
+         max:3,
+         error: function( data ){
+           alert('Oops! Error getting these tweets');
+           document.getElementById('tweets-2').innerHTML = '<p>Sorry, there was an error getting these tweets :(</p>'
+         }
+       });
+       c.show();
+     }
+     </script>
+    
+  </body>
+</html>
