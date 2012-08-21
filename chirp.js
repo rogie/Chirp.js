@@ -69,7 +69,7 @@ var Chirp = function( opts ){
   	      }
 	      }
 	    }	
-	    for( var i = indices.length-1; i > 0; --i){ 
+	    for( var i = indices.length-1; i >= 0; --i){ 
 		    if( indices[i] != undefined ){
 		      html = html.substr(0,indices[i].start) + indices[i].link + html.substr(indices[i].end,html.length-1);
 		    }
