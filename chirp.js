@@ -18,7 +18,7 @@ var Chirp = function( opts ){
 			error: function(){},
 			templates: {
 				base:'<div class="chirp">{{tweets}}</div>',
-				tweet: '<p>{{html}}</p>'
+				tweet: '<p>{{html}}</p><span class="meta"><time><a href="http://twitter.com/{{user.screen_name}}/statuses/{{id_str}}">{{time_ago}}</a></time> — via <a href="http://twitter.com/{{user.screen_name}}" title="{{user.name}} — {{user.description}}">{{user.name}}</a></span>'
 			}
 		},
 		ext = function(o1,o2){
