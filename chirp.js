@@ -33,9 +33,11 @@ var Chirp = function( opts ){
 			} 
 		},
 		ago = function(time){
-			var date = new Date((time || "").replace(/-/g,"/").replace(/[TZ]/g," ")),
+			var date = new Date((time || "").replace(/(\d{1,2}[:]\d{2}[:]\d{2}) (.*)/, '$2 $1').replace(/(\+\S+) (.*)/, '$2 $1').replace(/-/g,"/")),
 				diff = (((new Date()).getTime() - date.getTime()) / 1000),
 				day_diff = Math.floor(diff / 86400);
+			
+			console.log((time || "").replace(/(\d{1,2}[:]\d{2}[:]\d{2}) (.*)/, '$2 $1').replace(/(\+\S+) (.*)/, '$2 $1').replace(/-/g,"/").replace(/[TZ]/g," "), " ", date);
 			if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
 				return;
 			return day_diff == 0 && (
