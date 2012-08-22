@@ -123,6 +123,7 @@ var Chirp = function( opts ){
 							cachedData = cachedData.data;
 						} else {
 							localStorage.removeItem(key);
+							cachedData = null;
 						}
 					}else{
 						cachedData = null;

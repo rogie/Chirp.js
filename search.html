@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    
+  </head>
+  <body>
+    <h2>Searching</h2>
+    <p>The Twitter search API is quite a bit different from the user timeline and thus, the template looks a lot different. Use at your own peril :)</p>
+    <script src="chirp.min.js"></script>
+    <script>Chirp({
+      search: escape('#loveyourneighbor'),
+      max:20,
+      cacheExpire:0,
+      templates: {
+      	base: '<ul class="chirp">{{tweets}}</ul>',
+      	tweet: '<li><p><a href="http://twitter.com/{{from_user}}" title="{{from_user_name}}"><img src="{{profile_image_url}}"></a> {{html}}</p><span class="meta"><time><a href="http://twitter.com/{{user.screen_name}}/statuses/{{id_str}}">{{time_ago}}</a></time> &mdash; via <a href="http://twitter.com/{{from_user}}">@{{from_user}}</a></span></li>'
+      }
+    })</script>
+  </body>
+</html>
