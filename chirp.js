@@ -2,7 +2,8 @@ var Chirp = function( opts ){
 	var api = {
 			user: 'http://api.twitter.com/1/statuses/user_timeline.json?include_entities=true&count={{count}}&include_rts={{retweets}}&exclude_replies={{!replies}}&screen_name={{user}}',
 			list: 'http://api.twitter.com/1/{{user}}/lists/{{list}}/statuses.json?include_entities=true',
-			search: 'http://search.twitter.com/search.json?include_entities=true&q={{search}}'
+			search: 'http://search.twitter.com/search.json?include_entities=true&q={{search}}',
+			favorites: 'https://api.twitter.com/1/favorites.json?include_entities=true&count={{count}}&include_rts={{retweets}}&exclude_replies={{!replies}}&screen_name={{user}}'
 		},
 		options = {
 			retweets: true,
@@ -10,6 +11,7 @@ var Chirp = function( opts ){
 			user: 'rogie',
 			list: null,
 			search: null,
+			favorites: false,
 			target: null,
 			count: 100,
 			max: 20,
@@ -146,7 +148,7 @@ var Chirp = function( opts ){
 			var	callkey = 'callback' + Chirp.requests,
 				kids = document.body.children,
 				script = document.scripts[document.scripts.length-1],
-				url = (options.list? render(api.list,options) : (options.search? render(api.search,options) : render(api.user,options))),
+				url = (options.list? render(api.list,options) : (options.search? render(api.search,options) : (options.favorites? render(api.favorites,options) : render(api.user,options)))),
 				scriptInBody = script.parentNode.nodeName != 'head';
 				Chirp[callkey] = function(json,cached){
 					json = json.results? json.results : json;

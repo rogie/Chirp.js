@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <script src="chirp.min.js"></script>
+    
+    <h1>Showing Your Favorites</h1>
+    <p>Visit <a href="http://lab.rog.ie/chirp/">Chirp's page</a> for more documentation, if needed</p>
+    
+    <h2>Show Favorites</h2>
+    <script>Chirp({
+      user:'rogie',
+      favorites: true,
+      max:5
+    })</script>
+    
+    <h2>Show Favorites (with custom templating)</h2>
+    <script>Chirp({
+      user:'rogie',
+      favorites: true,
+      max:10,
+      templates: {
+      	base: '<ul class="chirp">{{tweets}}</ul>',
+      	tweet: '<li><p><a href="http://twitter.com/{{user.screen_name}}" title="{{user.name}} — {{user.description}}"><img src="{{user.profile_image_url}}"></a> {{html}}</p><span class="meta"><time><a href="http://twitter.com/{{user.screen_name}}/statuses/{{id_str}}">{{time_ago}}</a></time> &mdash; via <a href="http://twitter.com/{{user.screen_name}}" title="{{user.name}} — {{user.description}}">{{user.name}}</a></span></li>'
+      }
+    })</script>
+    
+  </body>
+</html>
