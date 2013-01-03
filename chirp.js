@@ -117,7 +117,7 @@ var Chirp = function( opts ){
 		   return output;
 		},
 		cache = function( key, json ){
-			if( localStorage && JSON ){
+			if( (typeof localStorage !== undefined) && (typeof JSON !== undefined) ){
 				var now = new Date().getTime(), 
 					cachedData = null;
 				if( json == undefined ){	
