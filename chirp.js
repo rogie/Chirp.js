@@ -30,14 +30,14 @@ var Chirp = function( opts ){
 						ext(o1[key],o2[key]);
 					}else{
 						o1[key] = o2[key];
-					} 
+					}
 				}
-			} 
+			}
 		},
 		ago = function(time){
 			var date = new Date((time || "").replace(/(\d{1,2}[:]\d{2}[:]\d{2}) (.*)/, '$2 $1').replace(/(\+\S+) (.*)/, '$2 $1').replace(/-/g,"/")),
 				diff = (((new Date()).getTime() - date.getTime()) / 1000),
-				day_diff = Math.floor(diff / 86400);			
+				day_diff = Math.floor(diff / 86400);
 			if ( isNaN(day_diff) || day_diff < 0)
 				return;
 			return day_diff == 0 && (
@@ -54,7 +54,7 @@ var Chirp = function( opts ){
 		},
 		htmlify = function( txt, entities ){
 	    var indices = [],
-	        html = txt, 
+	        html = txt,
 	        link = {
 	          'urls': function(e){ return '<a href="' + e.expanded_url + '">' + e.display_url + '</a>' },
 	          'hashtags': function(e){ return '<a href="http://twitter.com/search/%23' + e.text + '">#' + e.text + '</a>' },
@@ -68,12 +68,12 @@ var Chirp = function( opts ){
     	      indices[e.indices[0]] = {
     	        start: e.indices[0],
     	        end: e.indices[1],
-    	        link: link[key](e) 
+    	        link: link[key](e)
     	      }
   	      }
 	      }
-	    }	
-	    for( var i = indices.length-1; i >= 0; --i){ 
+	    }
+	    for( var i = indices.length-1; i >= 0; --i){
 		    if( indices[i] != undefined ){
 		      html = html.substr(0,indices[i].start) + indices[i].link + html.substr(indices[i].end,html.length-1);
 		    }
@@ -81,7 +81,7 @@ var Chirp = function( opts ){
 		  return html;
 		},
 		toHTML = function( json ){
-			var twts = '',i=0; 
+			var twts = '',i=0;
 			for(twt in json){
 				json[twt].index = ++i;
 				json[twt].html = htmlify(json[twt].text, json[twt].entities);
@@ -89,7 +89,7 @@ var Chirp = function( opts ){
 				twts += render(options.templates.tweet,json[twt]);
 				if( i==options.max ){
 					break;
-				} 
+				}
 			}
 			return render(options.templates.base,{tweets:twts});
 		},
@@ -101,7 +101,7 @@ var Chirp = function( opts ){
 		   	   			dotKey = dotKey.replace(/!/ig,'');
 		   	   			invert = '!';
 		   	   		}
-		   	   		try{		   	   			
+		   	   		try{
 		   	   			val = eval(invert + "d['" + dotKey.split('.').join("']['") + "']");
 		   	   		}catch(e){
 		   	   			val = '';
@@ -110,17 +110,17 @@ var Chirp = function( opts ){
 		   		},
 		   		matches = tpl.match(/{{[^}}]*}}/igm);
 		   for(var i=0; i < matches.length; ++i){
-		   	var m = matches[i], 
+		   	var m = matches[i],
 		   			val = dotData(data, matches[i].replace(/{{|}}/ig,'')) || '';
 		   	output = output.replace( new RegExp(m,'igm'), val );
 		   }
 		   return output;
 		},
 		cache = function( key, json ){
-			if( localStorage && JSON ){
-				var now = new Date().getTime(), 
+			if( (typeof localStorage !== undefined) && (typeof JSON !== undefined) ){
+				var now = new Date().getTime(),
 					cachedData = null;
-				if( json == undefined ){	
+				if( json == undefined ){
 					try{ cachedData = JSON.parse(unescape(localStorage.getItem(key))); }catch(e){}
 					if( cachedData ){
 						if( (now - cachedData.time) < options.cacheExpire ){
@@ -132,21 +132,22 @@ var Chirp = function( opts ){
 					}else{
 						cachedData = null;
 					}
-					return cachedData;	
-				}else{	
+					return cachedData;
+				}else{
 					try{
 						localStorage.setItem(key, escape(JSON.stringify({time:now,data:json})));
 					}catch(e){
-						console.log(e);
+            //removed for IE 7 compatability
+						//console.log(e);
 					}
-				}	
+				}
 			}else{
 				return null;
-			}		
+			}
 		},
 		get = function(){
 			Chirp.requests = (Chirp.requests == undefined? 1:Chirp.requests+1);
-			var get = document.createElement('script');	
+			var get = document.createElement('script');
 			var	callkey = 'callback' + Chirp.requests,
 				kids = document.body.children,
 				script = document.scripts[document.scripts.length-1],
@@ -170,7 +171,7 @@ var Chirp = function( opts ){
 			if( cachedData = cache(url) ){
 				Chirp[callkey](cachedData,true);
 			}else{
-				get.src = url + '&callback=Chirp.' + callkey;	
+				get.src = url + '&callback=Chirp.' + callkey;
 				document.getElementsByTagName('head')[0].appendChild(get);
 			}
 		},
@@ -184,16 +185,16 @@ var Chirp = function( opts ){
 				}else if (opts.constructor == Object) {
 					ext(options,opts);
 				}
-			}	
+			}
 		};
 	this.show = function( opts ){
 		init(opts);
 		if( options.target ){
 			document.getElementById(options.target).innerHTML = '';
 		}
-		get();	
+		get();
 	}
-	//Chirp can be used as a singleton by passing the user to the function	
+	//Chirp can be used as a singleton by passing the user to the function
 	if(this.constructor != Chirp ){
 		new Chirp( opts ).show();
 	}else{
